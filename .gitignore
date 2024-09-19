@@ -1,0 +1,10 @@
+*.vs*
+*.env
+*.log
+*.log.*
+.bin
+*.pid
+*.pid.*
+*.dll
+*appsettings.json
+.fake
