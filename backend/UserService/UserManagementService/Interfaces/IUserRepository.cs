@@ -9,5 +9,10 @@ namespace UserManagementService.Interfaces
         Task<User> CreateUser(User user);
         Task<bool> UpdateUser(string id, UserProfileUpdateDto user);
         Task<bool> DeleteUser(string id);
+        Task<bool> FollowUser(string userId, string targetId);
+        Task<bool> UnfollowUser(string userId, string targetId);
+
+        Task<List<User>> GetFollowers(string userId);
+        Task<List<User>> GetFollowing(string userId);
     }
 }

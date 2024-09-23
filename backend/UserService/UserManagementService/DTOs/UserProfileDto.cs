@@ -10,5 +10,8 @@ public class UserProfileDto
     public List<string> Skills { get; set; }
     public List<string> TopicsOfInterest { get; set; }
     public string ImageUrl { get; set; }
+    public List<string> Followers { get; set; }
+    public List<string> Following { get; set;}
 }
 }
+

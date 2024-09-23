@@ -3,9 +3,11 @@ using UserManagementService.Interfaces;
 using UserManagementService.Models;
 using UserManagementService.DTOs;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserManagementService.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
@@ -51,7 +53,7 @@ namespace UserManagementService.Controllers
             await _userService.CreateUserAsync(newUser);
 
             return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, newUser);
-            
+
         }
 
         [HttpPut("{id}")]
@@ -79,6 +81,40 @@ namespace UserManagementService.Controllers
             }
 
             return NoContent();
+        }
+        [HttpPost("{userId}/follow/{targetId}")]
+        public async Task<IActionResult> FollowUser(string userId, string targetId)
+        {
+            var result = await _userService.FollowUserAsync(userId, targetId);
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+        [HttpPost("{userId}/unfollow/{targetId}")]
+        public async Task<IActionResult> UnfollowUser(string userId, string targetId)
+        {
+            var result = await _userService.UnfollowUserAsync(userId, targetId);
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+        [HttpGet("{userId}/followers")]
+        public async Task<IActionResult> GetFollowers(string userId)
+        {
+            var followers = await _userService.GetFollowersAsync(userId);
+            return Ok(followers);
+        }
+        [HttpGet("{userId}/following")]
+        public async Task<IActionResult> GetFollowing(string userId)
+        {
+            var following = await _userService.GetFollowingAsync(userId);
+            return Ok(following);
         }
     }
 }

@@ -39,5 +39,22 @@ namespace UserManagementService.Services
         {
             return await _userRepository.DeleteUser(id);
         }
+
+        public async Task<bool> FollowUserAsync(string userId, string targetId)
+        {
+            return await _userRepository.FollowUser(userId, targetId);
+        }
+        public async Task<bool> UnfollowUserAsync(string userId, string targetId)
+        {
+            return await _userRepository.UnfollowUser(userId, targetId);
+        }
+        public async Task<List<User>> GetFollowersAsync(string userId)
+        {
+            return await _userRepository.GetFollowers(userId);
+        }
+        public async Task<List<User>> GetFollowingAsync(string userId)
+        {
+            return await _userRepository.GetFollowing(userId);
+        }
     }
 }

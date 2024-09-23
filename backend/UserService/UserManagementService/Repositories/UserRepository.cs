@@ -50,5 +50,62 @@ namespace UserManagementService.Repositories
             var result = await _users.DeleteOneAsync(user => user.Id == id);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
+        public async Task<bool> FollowUser(string userId, string targetId)
+        {
+            var user = await _users.Find(user => user.Id == userId).FirstOrDefaultAsync();
+            var targetUser = await _users.Find(user => user.Id == targetId).FirstOrDefaultAsync();
+            if (user == null || targetUser == null)
+            {
+                return false;
+            }
+            // Check if user is already following target
+            if (user.Following.Contains(targetId))
+            {
+                return true;
+            }
+            user.Following.Add(targetId); // Add target to user's following list
+            targetUser.Followers.Add(userId); // Add user to target's followers list
+            var result = await _users.ReplaceOneAsync(u => u.Id == userId, user);
+            var targetResult = await _users.ReplaceOneAsync(u => u.Id == targetId, targetUser);
+            return result.IsAcknowledged && result.ModifiedCount > 0 && targetResult.IsAcknowledged && targetResult.ModifiedCount > 0;
+        }
+        public async Task<bool> UnfollowUser(string userId, string targetId)
+        {
+            var user = await _users.Find(user => user.Id == userId).FirstOrDefaultAsync();
+            var targetUser = await _users.Find(user => user.Id == targetId).FirstOrDefaultAsync();
+            if (user == null || targetUser == null)
+            {
+                return false;
+            }
+            if (!user.Following.Contains(targetId))
+            {
+                return true;
+            }
+            user.Following.Remove(targetId);
+            targetUser.Followers.Remove(userId);
+            var result = await _users.ReplaceOneAsync(u => u.Id == userId, user);
+            var targetResult = await _users.ReplaceOneAsync(u => u.Id == targetId, targetUser);
+            return result.IsAcknowledged && result.ModifiedCount > 0 && targetResult.IsAcknowledged && targetResult.ModifiedCount > 0;
+        }
+        public async Task<List<User>> GetFollowers(string userId)
+        {
+            var user = await _users.Find(user => user.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                return null;
+            }
+            var followers = await _users.Find(user => user.Following.Contains(userId)).ToListAsync();
+            return followers;
+        }
+        public async Task<List<User>> GetFollowing(string userId)
+        {
+            var user = await _users.Find(user => user.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                return null;
+            }
+            var following = await _users.Find(user => user.Followers.Contains(userId)).ToListAsync();
+            return following;
+        }
     }
 }

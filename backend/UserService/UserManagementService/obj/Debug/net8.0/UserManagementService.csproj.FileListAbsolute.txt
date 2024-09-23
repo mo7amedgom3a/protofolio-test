@@ -52,3 +52,11 @@
 /home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.UserManagementService.props
 /home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/obj/Debug/net8.0/staticwebassets.pack.json
 /home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/obj/Debug/net8.0/scopedcss/bundle/UserManagementService.styles.css
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll

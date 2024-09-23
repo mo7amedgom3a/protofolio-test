@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using SecurityServiceBackend.DTOs;
 using SecurityServiceBackend.Interfaces;
 using SecurityServiceBackend.Models;
+using SecurityServiceBackend.AsyncDataServices;
 
 namespace SecurityServiceBackend.Services
 {
@@ -24,7 +25,9 @@ namespace SecurityServiceBackend.Services
         var user = _mapper.Map<ApplicationUser>(registerUserDto);
 
         var result = await _userRepository.CreateUserAsync(user, registerUserDto.Password);
-        return result;
+        if (result.Succeeded)
+        {
+            
     }
 
     public async Task<string> LoginAsync(LoginDTO loginDTO)

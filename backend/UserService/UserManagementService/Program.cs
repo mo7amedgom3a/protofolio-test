@@ -5,6 +5,11 @@ using UserManagementService.Interfaces;
 using UserManagementService.Models;
 using Microsoft.OpenApi.Models;
 using UserManagementService.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Cryptography;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +22,9 @@ var database = client.GetDatabase(mongoDBSettings.GetDatabaseName());
 builder.Services.AddSingleton(database);
 builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongoDBSettings.GetConnectionString()));
 builder.Services.AddSingleton(sp => client.GetDatabase(mongoDBSettings.GetDatabaseName()));
+builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddHostedService<MessageBusSubscriber>();
+
 
 // Repositories and services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -71,6 +79,23 @@ builder.Services.AddSwaggerGen(c =>
 // Add controllers support
 builder.Services.AddControllers();
 
+string publicKey = File.ReadAllText("public.key");
+RSA rsa = RSA.Create();
+rsa.ImportFromPem(publicKey.ToCharArray());
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new RsaSecurityKey(rsa)
+        };
+    });
+
 // Build the app
 var app = builder.Build();
 
@@ -83,8 +108,7 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 });
 
-// Middleware
-app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
