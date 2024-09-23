@@ -8,3 +8,4 @@
 *.dll
 *appsettings.json
 .fake
+*.key*

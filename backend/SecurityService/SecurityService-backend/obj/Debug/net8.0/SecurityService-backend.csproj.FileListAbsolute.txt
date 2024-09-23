@@ -135,3 +135,4 @@
 /home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/obj/Debug/net8.0/SecurityService-backend.MvcApplicationPartsAssemblyInfo.cs
+/home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/obj/Debug/net8.0/SecurityService-backend.sourcelink.json

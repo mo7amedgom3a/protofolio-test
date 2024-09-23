@@ -14,6 +14,7 @@ using SecurityServiceBackend.Interfaces;
 using SecurityServiceBackend.Services;
 using SecurityService.Helpers;
 using SecurityServiceBackend.Models;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,44 +47,29 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     // AutoMapper configuration
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-    // Configure JWT Authentication
-    var jwtKey = configuration["JWT:Key"];
-    if (string.IsNullOrEmpty(jwtKey))
-    {
-        throw new ArgumentNullException(nameof(jwtKey), "JWT Key is not configured.");
-    }
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-
-    services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
+    // Configure JWT Authentication by public and private keys and the public key path ./public.key
+    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = configuration["JWT:Issuer"],
-            ValidAudience = configuration["JWT:Audience"],
-            IssuerSigningKey = key,
-            ClockSkew = TimeSpan.Zero,
-            RequireExpirationTime = true
-        };
-    });
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new RsaSecurityKey(RSA.Create()),
+                ValidateIssuer = true,
+                ValidIssuer = configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = configuration["Jwt:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+            
+        });
 
-    var jwtConfig = configuration.GetSection("Jwt").Get<JwtConfig>();
-    services.Configure<JwtConfig>(configuration.GetSection("Jwt"));
 
     // Register Repositories and Services for Dependency Injection
     services.AddScoped<IUserRepository, UserRepository>();
     services.AddScoped<IAuthService, AuthService>();
-    services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+    services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
     // Add Authorization
     services.AddAuthorization();
 

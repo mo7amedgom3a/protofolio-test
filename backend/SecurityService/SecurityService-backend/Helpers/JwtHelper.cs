@@ -4,40 +4,71 @@ using Microsoft.IdentityModel.Tokens;
 using SecurityServiceBackend.Configurations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 namespace SecurityService.Helpers
 {
     public class JwtTokenGenerator : IJwtTokenGenerator
-{
-    private readonly IConfiguration _configuration;
-    private readonly SymmetricSecurityKey _key;
-
-    public JwtTokenGenerator(IConfiguration configuration)
     {
-        _configuration = configuration;
-        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-    }
+        private readonly IConfiguration _configuration;
+        private readonly RSA _privateKey;
+        private readonly RSA _publicKey;
+        private readonly SymmetricSecurityKey _key;
 
-    public string GenerateToken(IdentityUser user)
-    {
-        var claims = new[]
+        public JwtTokenGenerator(IConfiguration configuration)
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-            new Claim("role", "User") // Additional claim
-        };
+            _configuration = configuration;
+            //_key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
 
-        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(
-            _configuration["Jwt:Issuer"],
-            _configuration["Jwt:Audience"],
-            claims,
-            expires: DateTime.Now.AddDays(7),
-            signingCredentials: creds);
+            _privateKey = RSA.Create();
+            _publicKey = RSA.Create();
+            var privateKey = File.ReadAllText("/home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/private.key");
+            _privateKey.ImportFromPem(privateKey.ToCharArray());
+            var publicKey = File.ReadAllText("/home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/public.key");
+            _publicKey.ImportFromPem(publicKey.ToCharArray());
+        }
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        public string GenerateToken(IdentityUser user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var issuer = _configuration["Jwt:Issuer"];
+            var audience = _configuration["Jwt:Audience"];
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(30),
+                SigningCredentials = new SigningCredentials(new RsaSecurityKey(_privateKey), SecurityAlgorithms.RsaSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+        public bool ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new RsaSecurityKey(_publicKey),
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _configuration["Jwt:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+            try
+            {
+                tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
-}
-
 }
