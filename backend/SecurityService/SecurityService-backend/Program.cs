@@ -15,6 +15,9 @@ using SecurityServiceBackend.Services;
 using SecurityService.Helpers;
 using SecurityServiceBackend.Models;
 using System.Security.Cryptography;
+using SecurityService.AsyncDataServices;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +33,21 @@ app.Run();
 
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
+    const int maxRequestLimit = 209715200;
+    services.Configure<IISServerOptions>(options =>
+    {
+        options.MaxRequestBodySize = maxRequestLimit;
+    });
+    services.Configure<KestrelServerOptions>(options =>
+    {
+        options.Limits.MaxRequestBodySize = maxRequestLimit;
+    });
+    services.Configure<FormOptions>(options =>
+    {
+        options.ValueLengthLimit = maxRequestLimit;
+        options.MultipartBodyLengthLimit = maxRequestLimit;
+        options.MultipartHeadersLengthLimit = maxRequestLimit;
+    });
     // Configure MySQL
     services.AddDbContext<ApplicationDbContext>(options =>
     {
@@ -70,6 +88,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     services.AddScoped<IUserRepository, UserRepository>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+    services.AddSingleton<IMessageBusClient, MessageBusClient>();
     // Add Authorization
     services.AddAuthorization();
 

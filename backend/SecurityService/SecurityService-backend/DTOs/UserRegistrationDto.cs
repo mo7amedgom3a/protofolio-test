@@ -11,5 +11,6 @@ namespace SecurityService.DTOs
         public string[] Skills { get; set; }
         public string[] TopicsOfInterest { get; set; }
         public string ImageUrl { get; set; }
+        public string Event { get; set; } // Event type, e.g., "UserRegistered"
     }
 }

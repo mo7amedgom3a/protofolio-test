@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using SecurityService.DTOs;
 using SecurityServiceBackend.DTOs;
 using SecurityServiceBackend.Models;
 
@@ -17,6 +18,12 @@ namespace SecurityServiceBackend
             
         CreateMap<UserDTO, ApplicationUser>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username)).ReverseMap();
+
+        // map RegisterDTO to UserRegistrationDto
+        CreateMap<RegisterDTO, UserRegistrationDto>();
+        CreateMap<UserRegistrationDto, ApplicationUser>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username)).ReverseMap();
+
     }
 }
 }

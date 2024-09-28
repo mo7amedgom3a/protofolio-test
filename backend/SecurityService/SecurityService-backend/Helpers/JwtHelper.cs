@@ -40,7 +40,8 @@ namespace SecurityService.Helpers
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                // expire after one month
+                Expires = DateTime.UtcNow.AddMonths(1),
                 SigningCredentials = new SigningCredentials(new RsaSecurityKey(_privateKey), SecurityAlgorithms.RsaSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

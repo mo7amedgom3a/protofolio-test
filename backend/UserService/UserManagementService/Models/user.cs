@@ -10,7 +10,7 @@ namespace UserManagementService.Models
         [BsonId(IdGenerator = typeof(StringObjectIdGenerator))] // Auto generate ObjectId
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        //public string UserId { get; set; } = ObjectId.GenerateNewId().ToString(); // Auto generate UserId
+        public string UserId { get; set; } = ObjectId.GenerateNewId().ToString(); // Auto generate UserId
 
         [BsonElement("username")]
         [BsonRequired]
@@ -35,7 +35,7 @@ namespace UserManagementService.Models
         public List<string> TopicsOfInterest { get; set; }
 
         [BsonElement("imageUrl")]
-        [RegularExpression(@"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)")]
+        // [RegularExpression(@"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)")]
         public string ImageUrl { get; set; }
         [BsonElement("followers")]
         public List<string> Followers { get; set; } = new List<string>();

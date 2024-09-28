@@ -23,7 +23,7 @@ namespace SecurityServiceBackend.Contrlollers
             {
                 var result = await _authService.RegisterAsync(registerDTO);
                 if (result == null) return BadRequest("Failed to register user.");
-                return Ok(result);
+                return Ok("User registered successfully.");
             }
             return BadRequest("Invalid input.");
         }

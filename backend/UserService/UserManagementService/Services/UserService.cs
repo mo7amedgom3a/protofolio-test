@@ -15,12 +15,12 @@ namespace UserManagementService.Services
             _userRepository = userRepository;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<PaginatedUsers> GetAllUsersAsync(int page, int pageSize)
         {
-            return await _userRepository.GetUsers();
+            return await _userRepository.GetUsers(page, pageSize);
         }
 
-        public async Task<User> GetUserByIdAsync(string id)
+        public async Task<UserProfileDto> GetUserByIdAsync(string id)
         {
             return await _userRepository.GetUser(id);
         }
@@ -48,13 +48,14 @@ namespace UserManagementService.Services
         {
             return await _userRepository.UnfollowUser(userId, targetId);
         }
-        public async Task<List<User>> GetFollowersAsync(string userId)
+        public async Task<PaginatedUsers> GetFollowersAsync(string userId, int page, int pageSize)
         {
-            return await _userRepository.GetFollowers(userId);
+            return await _userRepository.GetFollowers(userId, page, pageSize);
         }
-        public async Task<List<User>> GetFollowingAsync(string userId)
+        public async Task<PaginatedUsers> GetFollowingAsync(string userId, int page, int pageSize)
         {
-            return await _userRepository.GetFollowing(userId);
+            return await _userRepository.GetFollowing(userId, page, pageSize);
         }
+
     }
 }

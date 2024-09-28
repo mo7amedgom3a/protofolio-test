@@ -1,6 +1,9 @@
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using System;
+using SecurityService.DTOs;
 
 namespace SecurityService.AsyncDataServices
 {
@@ -20,24 +23,29 @@ namespace SecurityService.AsyncDataServices
     {
         var factory = new ConnectionFactory()
         {
-            HostName = _configuration["RabbitMQHost"],
-            Port = int.Parse(_configuration["RabbitMQPort"])
+            HostName = _configuration["RabbitMq:Host"],
+            Port = 5672,
+            UserName = "guest",
+            Password = "guest"
         };
 
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
+       // _channel.QueueDeclare(queue: "user-registered", durable: false, exclusive: false, autoDelete: false, arguments: null);
 
         _channel.ExchangeDeclare(exchange: "trigger", type: ExchangeType.Fanout);
 
         _connection.ConnectionShutdown += RabbitMQ_ConnectionShutdown;
+        Console.WriteLine("--> Connected to MessageBus");
     }
 
     public void PublishNewUser(UserRegistrationDto userDto)
     {
-        var message = JsonSerializer.Serialize(userDto);
+        var message = JsonSerializer.Serialize(userDto); 
 
         if (_connection.IsOpen)
         {
+            Console.WriteLine($"--> RabbitMQ Connection Opened. Sending message: {message}");
             SendMessage(message);
         }
         else
@@ -49,6 +57,7 @@ namespace SecurityService.AsyncDataServices
     private void SendMessage(string message)
     {
         var body = Encoding.UTF8.GetBytes(message);
+        
 
         _channel.BasicPublish(exchange: "trigger",
                               routingKey: "",

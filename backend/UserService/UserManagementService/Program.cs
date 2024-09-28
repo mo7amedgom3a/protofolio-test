@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using UserManagementService.EventProcessing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +23,14 @@ var database = client.GetDatabase(mongoDBSettings.GetDatabaseName());
 builder.Services.AddSingleton(database);
 builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongoDBSettings.GetConnectionString()));
 builder.Services.AddSingleton(sp => client.GetDatabase(mongoDBSettings.GetDatabaseName()));
-builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
-builder.Services.AddHostedService<MessageBusSubscriber>();
+
 
 
 // Repositories and services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddHostedService<MessageBusSubscriber>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -92,7 +94,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new RsaSecurityKey(rsa)
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            IssuerSigningKey = new RsaSecurityKey(rsa),
+            ClockSkew = TimeSpan.Zero // remove delay of token when expire
         };
     });
 
