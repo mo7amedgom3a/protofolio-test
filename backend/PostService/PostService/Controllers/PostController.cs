@@ -9,31 +9,40 @@ namespace PostService.Controllers
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
+        private readonly ILikeService _likeRepository;
+        private readonly ISavedPostService _savedPostService;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, ILikeService likeRepository, ISavedPostService savedPostService)
         {
             _postService = postService;
+            _likeRepository = likeRepository;
+            _savedPostService = savedPostService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllPosts()
+      [HttpGet]
+        public async Task<IActionResult> GetAllPosts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var posts = await _postService.GetAllPostsAsync();
-            return Ok(posts);
+            var paginatedPosts = await _postService.GetPaginatedPostsAsync(page, pageSize);
+            return Ok(paginatedPosts);
         }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPostById(string id)
+        [HttpGet("{authorId}")]
+        public async Task<IActionResult> GetPostById(string authorId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var post = await _postService.GetPostByIdAsync(id);
+                var post = await _postService.GetPaginatedPostsByIdAsync(authorId, page, pageSize);
                 return Ok(post);
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
             }
+        }
+        [HttpGet("user/posts/{userId}")]
+        public async Task<IActionResult> GetPostsByUserId(string userId)
+        {
+            var posts = await _postService.GetPostsByUserIdAsync(userId);
+            return Ok(posts);
         }
 
         [HttpPost]
@@ -61,6 +70,42 @@ namespace PostService.Controllers
         public async Task<IActionResult> DeletePost(string id)
         {
             await _postService.DeletePostAsync(id);
+            return NoContent();
+        }
+        [HttpGet("likes/{postId}")]
+        public async Task<IActionResult> GetLikesByPostId(string postId)
+        {
+            var likes = await _likeRepository.GetLikesByPostIdAsync(postId);
+            return Ok(likes);
+        }
+        [HttpPost("likes/{postId}/{userId}")]
+        public async Task<IActionResult> LikePost(string postId, string userId)
+        {
+            await _likeRepository.LikePostAsync(postId, userId);
+            return NoContent();
+        }
+        [HttpDelete("likes/{postId}/{userId}")]
+        public async Task<IActionResult> DislikePost(string postId, string userId)
+        {
+            await _likeRepository.DislikePostAsync(postId, userId);
+            return NoContent();
+        }
+        [HttpGet("saved/{userId}")]
+        public async Task<IActionResult> GetSavedPostsByUserId(string userId)
+        {
+            var savedPosts = await _savedPostService.GetSavedPostsByUserIdAsync(userId);
+            return Ok(savedPosts);
+        }
+        [HttpPost("saved/{postId}/{userId}")]
+        public async Task<IActionResult> SavePost(string postId, string userId)
+        {
+            await _savedPostService.SavePostAsync(postId, userId);
+            return NoContent();
+        }
+        [HttpDelete("saved/{postId}/{userId}")]
+        public async Task<IActionResult> UnsavePost(string postId, string userId)
+        {
+            await _savedPostService.UnsavePostAsync(postId, userId);
             return NoContent();
         }
     }

@@ -23,12 +23,21 @@ namespace PostService.Services
             var posts = await _postRepository.GetAllPostsAsync();
             return _mapper.Map<IEnumerable<PostDto>>(posts);
         }
-
+        public async Task<PaginatedPostsDto> GetPaginatedPostsAsync(int page, int pageSize)
+        {
+            var paginatedPosts = await _postRepository.GetPaginatedPostsAsync(page, pageSize);
+            return _mapper.Map<PaginatedPostsDto>(paginatedPosts);
+        }
         public async Task<PostDto> GetPostByIdAsync(string id)
         {
             var post = await _postRepository.GetPostByIdAsync(id);
             if (post == null) throw new KeyNotFoundException("Post not found");
             return _mapper.Map<PostDto>(post);
+        }
+        public async Task<PaginatedPostsDto> GetPaginatedPostsByIdAsync(string userId, int page, int pageSize)
+        {
+            var paginatedPosts = await _postRepository.GetPaginatedPostsByIdAsync(userId, page, pageSize);
+            return _mapper.Map<PaginatedPostsDto>(paginatedPosts);
         }
 
         public async Task CreatePostAsync(CreatePostDto postDto)
@@ -52,25 +61,11 @@ namespace PostService.Services
         {
             await _postRepository.DeletePostAsync(id);
         }
-
-        public Task SavePostAsync(SavePostDto savePostDto)
+        public async Task<IEnumerable<PostDto>> GetPostsByUserIdAsync(string userId)
         {
-            throw new NotImplementedException();
+            var posts = await _postRepository.GetPostsByUserIdAsync(userId);
+            return _mapper.Map<IEnumerable<PostDto>>(posts);
         }
 
-        public Task RemoveSavedPostAsync(string userId, string postId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task AddOrUpdateReactionAsync(string postId, ReactionDto reactionDto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task RemoveReactionAsync(string postId, string userId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

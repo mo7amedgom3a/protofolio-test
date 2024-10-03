@@ -36,6 +36,10 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<IPostService, PostService.Services.Postservice>();
     services.AddScoped<ICommentRepository, CommentRepository>();
     services.AddScoped<ICommentService, CommentService>();
+    services.AddScoped<ILikeRepository, LikeRepository>();
+    services.AddScoped<ILikeService, LikeService>();
+    services.AddScoped<ISavedPostRepository, SavedPostRepository>();
+    services.AddScoped<ISavedPostService, SavedPostService>();
 
     //services.AddScoped<ISavedPostRepository, SavedPostRepository>();
   

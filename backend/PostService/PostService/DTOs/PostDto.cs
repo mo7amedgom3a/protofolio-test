@@ -14,6 +14,5 @@ namespace PostService.DTOs
         public int Likes { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; }
-        public bool IsSaved { get; set; }  // To track saved state of the post
     }
 }

@@ -9,13 +9,8 @@ namespace PostService.Interfaces
         Task CreatePostAsync(CreatePostDto postDto);
         Task UpdatePostAsync(string id, UpdatePostDto postDto);
         Task DeletePostAsync(string id);
-
-        // Reaction
-        Task AddOrUpdateReactionAsync(string postId, ReactionDto reactionDto);
-        Task RemoveReactionAsync(string postId, string userId);
-
-        // Saved Posts
-        Task SavePostAsync(SavePostDto savePostDto);
-        Task RemoveSavedPostAsync(string userId, string postId);
+        Task<IEnumerable<PostDto>> GetPostsByUserIdAsync(string userId);
+        Task<PaginatedPostsDto> GetPaginatedPostsAsync(int page, int pageSize);
+        Task<PaginatedPostsDto> GetPaginatedPostsByIdAsync(string userId, int page, int pageSize);
     }
 }

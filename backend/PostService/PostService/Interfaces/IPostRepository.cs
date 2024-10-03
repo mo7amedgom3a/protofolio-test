@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using PostService.DTOs;
 using PostService.Models;
 
 namespace PostService.Interfaces
@@ -11,6 +12,9 @@ namespace PostService.Interfaces
         Task UpdatePostAsync(Post post);
         Task UpdatePostAsyncById(string id, UpdateDefinition<Post> update);
         Task DeletePostAsync(string id);
-        // Add more methods as needed
+        
+        Task<IEnumerable<PostDto>> GetPostsByUserIdAsync(string userId);
+        Task<PaginatedPostsDto> GetPaginatedPostsAsync(int page, int pageSize);
+        Task<PaginatedPostsDto> GetPaginatedPostsByIdAsync(string userId, int page, int pageSize);
     }
 }

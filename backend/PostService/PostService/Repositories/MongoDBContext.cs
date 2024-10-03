@@ -16,6 +16,7 @@ namespace PostService.Repositories
         public IMongoCollection<Post> Posts => _database.GetCollection<Post>("Posts");
         public IMongoCollection<Comment> Comments => _database.GetCollection<Comment>("Comments");
         public IMongoCollection<SavedPost> SavedPosts => _database.GetCollection<SavedPost>("SavedPosts");
+        public IMongoCollection<Like> Likes => _database.GetCollection<Like>("Likes");
 
         // Add more collections as needed
     }

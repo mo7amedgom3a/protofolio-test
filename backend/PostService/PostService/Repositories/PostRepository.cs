@@ -1,28 +1,56 @@
 using MongoDB.Driver;
+using PostService.DTOs;
 using PostService.Interfaces;
 using PostService.Models;
+using AutoMapper;
 
 namespace PostService.Repositories
 {
     public class PostRepository : IPostRepository
     {
         private readonly IMongoCollection<Post> _posts;
+        private readonly IMapper _mapper;
 
-        public PostRepository(MongoDBContext context)
+        public PostRepository(MongoDBContext context, IMapper mapper)
         {
             _posts = context.Posts;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Post>> GetAllPostsAsync()
         {
             return await _posts.Find(post => true).ToListAsync();
         }
-
+        public async Task<PaginatedPostsDto> GetPaginatedPostsAsync(int page, int pageSize)
+        {
+            var posts = await _posts.Find(post => true).Skip((page - 1) * pageSize).SortByDescending(post => post.CreatedAt).Limit(pageSize).ToListAsync();
+            var totalPosts = await _posts.CountDocumentsAsync(post => true);
+            return new PaginatedPostsDto
+            {
+                Posts = _mapper.Map<IEnumerable<PostDto>>(posts),
+                TotalPosts = totalPosts,
+                TotalPages = (int)Math.Ceiling(totalPosts / (double)pageSize),
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+        }
         public async Task<Post> GetPostByIdAsync(string id)
         {
             return await _posts.Find(post => post.Id == id).FirstOrDefaultAsync();
         }
-
+        public async Task<PaginatedPostsDto> GetPaginatedPostsByIdAsync(string userId, int page, int pageSize)
+        {
+            var posts = await _posts.Find(post => post.AuthorId == userId).Skip((page - 1) * pageSize).SortByDescending(post => post.CreatedAt).Limit(pageSize).ToListAsync();
+            var totalPosts = await _posts.CountDocumentsAsync(post => post.AuthorId == userId);
+            return new PaginatedPostsDto
+            {
+                Posts = _mapper.Map<IEnumerable<PostDto>>(posts),
+                TotalPosts = totalPosts,
+                TotalPages = (int)Math.Ceiling(totalPosts / (double)pageSize),
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+        }
         public async Task CreatePostAsync(Post post)
         {
             await _posts.InsertOneAsync(post);
@@ -39,6 +67,12 @@ namespace PostService.Repositories
         public async Task DeletePostAsync(string id)
         {
             await _posts.DeleteOneAsync(post => post.Id == id);
+        }
+
+        public async Task<IEnumerable<PostDto>> GetPostsByUserIdAsync(string userId)
+        {
+            var posts = await _posts.Find(post => post.AuthorId == userId).ToListAsync();
+            return _mapper.Map<IEnumerable<PostDto>>(posts);
         }
     }
 }
