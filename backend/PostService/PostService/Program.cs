@@ -7,6 +7,9 @@ using PostService.Repositories;
 using PostService.Services;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using PostService.Grpc;
+using Grpc.Core;
+using Grpc.Net.Client;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configure services
 ConfigureServices(builder.Services, builder.Configuration);
+
+
 
 var app = builder.Build();
 
@@ -31,6 +36,18 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddSingleton<IMongoClient, MongoClient>(sp =>
         new MongoClient(configuration.GetValue<string>("MongoDB:ConnectionString")));
 
+    // Configure gRPC client
+    var handler = new HttpClientHandler();
+    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+    AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
+    var channel = GrpcChannel.ForAddress("http://localhost:5173", new GrpcChannelOptions { HttpHandler = handler });
+    var client = new UserService.UserServiceClient(channel);
+
+    services.AddSingleton(client);
+
+    // Register services and repositories
     services.AddSingleton<MongoDBContext>();
     services.AddScoped<IPostRepository, PostRepository>();
     services.AddScoped<IPostService, PostService.Services.Postservice>();
@@ -40,9 +57,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<ILikeService, LikeService>();
     services.AddScoped<ISavedPostRepository, SavedPostRepository>();
     services.AddScoped<ISavedPostService, SavedPostService>();
-
-    //services.AddScoped<ISavedPostRepository, SavedPostRepository>();
-  
+    services.AddSingleton<GrpcUserClientService>();
 
     // Add AutoMapper
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -92,6 +107,10 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
             }
         });
     });
+services.AddMvc(options =>
+{
+   options.SuppressAsyncSuffixInActionNames = false;
+});
 
     // Add controllers
     services.AddControllers();

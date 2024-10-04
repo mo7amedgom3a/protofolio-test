@@ -43,6 +43,7 @@ namespace PostService.Services
         public async Task CreatePostAsync(CreatePostDto postDto)
         {
             var post = _mapper.Map<Post>(postDto);
+            
             await _postRepository.CreatePostAsync(post);
         }
 

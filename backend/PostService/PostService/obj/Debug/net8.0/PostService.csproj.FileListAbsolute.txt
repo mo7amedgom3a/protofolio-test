@@ -49,3 +49,10 @@
 /home/mohamed/repos/protofolio-test/backend/PostService/PostService/obj/Debug/net8.0/PostService.pdb
 /home/mohamed/repos/protofolio-test/backend/PostService/PostService/obj/Debug/net8.0/PostService.genruntimeconfig.cache
 /home/mohamed/repos/protofolio-test/backend/PostService/PostService/obj/Debug/net8.0/ref/PostService.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Google.Protobuf.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Grpc.AspNetCore.Server.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Grpc.AspNetCore.Server.ClientFactory.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Grpc.Core.Api.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Grpc.Net.Client.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Grpc.Net.ClientFactory.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Grpc.Net.Common.dll

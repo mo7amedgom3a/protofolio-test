@@ -1,3 +1,4 @@
+using MongoDB.Bson.Serialization.Attributes;
 using PostService.Models;
 
 namespace PostService.DTOs
@@ -8,6 +9,9 @@ namespace PostService.DTOs
         public string AuthorId { get; set; }  // Reference to User Service
         public string Title { get; set; }
         public string Content { get; set; }
+        [BsonIgnoreIfNull]
+        [BsonIgnoreIfDefault]
+        public UserMetadata userMetadata { get; set; }
         public string Code { get; set; }
         public List<string> Images { get; set; } = new List<string>();
         public List<string> Comments { get; set; } = new List<string>();

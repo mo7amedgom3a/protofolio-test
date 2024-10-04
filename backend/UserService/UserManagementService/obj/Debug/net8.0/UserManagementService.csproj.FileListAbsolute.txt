@@ -60,3 +60,10 @@
 /home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
 /home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Google.Protobuf.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Grpc.AspNetCore.Server.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Grpc.AspNetCore.Server.ClientFactory.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Grpc.Core.Api.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Grpc.Net.Client.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Grpc.Net.ClientFactory.dll
+/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/bin/Debug/net8.0/Grpc.Net.Common.dll

@@ -10,11 +10,13 @@ namespace PostService.Repositories
     {
         private readonly IMongoCollection<Post> _posts;
         private readonly IMapper _mapper;
+        private readonly GrpcUserClientService _grpcUserClientService;
 
-        public PostRepository(MongoDBContext context, IMapper mapper)
+        public PostRepository(MongoDBContext context, IMapper mapper, GrpcUserClientService grpcUserClientService)
         {
             _posts = context.Posts;
             _mapper = mapper;
+            _grpcUserClientService = grpcUserClientService;
         }
 
         public async Task<IEnumerable<Post>> GetAllPostsAsync()
@@ -40,8 +42,8 @@ namespace PostService.Repositories
         }
         public async Task<PaginatedPostsDto> GetPaginatedPostsByIdAsync(string userId, int page, int pageSize)
         {
-            var posts = await _posts.Find(post => post.AuthorId == userId).Skip((page - 1) * pageSize).SortByDescending(post => post.CreatedAt).Limit(pageSize).ToListAsync();
-            var totalPosts = await _posts.CountDocumentsAsync(post => post.AuthorId == userId);
+            var posts = await _posts.Find(post => post.userMetadata.UserId == userId).Skip((page - 1) * pageSize).SortByDescending(post => post.CreatedAt).Limit(pageSize).ToListAsync();
+            var totalPosts = await _posts.CountDocumentsAsync(post => post.userMetadata.UserId == userId);
             return new PaginatedPostsDto
             {
                 Posts = _mapper.Map<IEnumerable<PostDto>>(posts),
@@ -51,8 +53,26 @@ namespace PostService.Repositories
                 PageSize = pageSize
             };
         }
+        private string EscapeStrings(string input)
+        {
+            // replace "" -> '' and \n -> \\n and \t -> \\t ...
+            return input.Replace("\"", "\'").Replace("\n", "\\n").Replace("\t", "\\t")
+                .Replace("\r", "\\r").Replace("\f", "\\f").Replace("\b", "\\b")
+                .Replace("\a", "\\a").Replace("\v", "\\v");
+        }
         public async Task CreatePostAsync(Post post)
         {
+            var userMetadata = await _grpcUserClientService.GetUserByIdAsync(post.AuthorId);
+
+            post.userMetadata = new UserMetadata
+            {
+                UserId = userMetadata.UserId,
+                Username = userMetadata.Username,
+                Name = userMetadata.Name,
+                Bio = userMetadata.Bio,
+                ImageUrl = userMetadata.ImageUrl
+            };
+            post.Code = EscapeStrings(post.Code);
             await _posts.InsertOneAsync(post);
         }
 
@@ -71,7 +91,7 @@ namespace PostService.Repositories
 
         public async Task<IEnumerable<PostDto>> GetPostsByUserIdAsync(string userId)
         {
-            var posts = await _posts.Find(post => post.AuthorId == userId).ToListAsync();
+            var posts = await _posts.Find(post => post.userMetadata.UserId == userId).ToListAsync();
             return _mapper.Map<IEnumerable<PostDto>>(posts);
         }
     }

@@ -49,7 +49,11 @@ namespace PostService.Controllers
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDto postDto)
         {
             await _postService.CreatePostAsync(postDto);
-            return CreatedAtAction(nameof(GetPostById), new { id = postDto.AuthorId }, postDto);
+            try {
+                return Created("api/post", postDto);
+            } catch (Exception ex) {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]

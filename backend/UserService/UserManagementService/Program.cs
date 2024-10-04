@@ -11,6 +11,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.IO;
 using UserManagementService.EventProcessing;
+using ZstdSharp.Unsafe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,11 @@ builder.Services.AddSingleton(database);
 builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongoDBSettings.GetConnectionString()));
 builder.Services.AddSingleton(sp => client.GetDatabase(mongoDBSettings.GetDatabaseName()));
 
+builder.Services.AddGrpc(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.MaxReceiveMessageSize = 16 * 1024 * 1024; // 16 MB
+});
 
 
 // Repositories and services
@@ -112,7 +118,7 @@ app.UseSwaggerUI(c =>
     c.DocumentTitle = "User Management Service API Docs";
     c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 });
-
+app.MapGrpcService<GrpcUserService>();
 app.UseAuthentication();
 app.UseAuthorization();
 
