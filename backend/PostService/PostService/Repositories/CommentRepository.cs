@@ -12,13 +12,14 @@ namespace PostService.Repositories
         private readonly IMongoCollection<Comment> _commentsCollection;
         private readonly IMongoCollection<Post> _postsCollection;
         private readonly IMapper _mapper;
+        private readonly GrpcUserClientService _grpcUserClientService;
 
-
-        public CommentRepository(MongoDBContext database, IMapper mapper)
+        public CommentRepository(MongoDBContext database, IMapper mapper, GrpcUserClientService grpcUserClientService)
         {
             _commentsCollection = database.Comments;
             _postsCollection = database.Posts;
             _mapper = mapper;
+            _grpcUserClientService = grpcUserClientService;
         }
 
         public async Task<IEnumerable<CommentDto>> GetCommentsByPostIdAsync(string postId)
@@ -38,12 +39,24 @@ public async Task<CommentDto> GetCommentByIdAsync(string commentId)
             return _mapper.Map<CommentDto>(comment);
         }
         public async Task AddCommentAsync(string postId, CreateCommentDto comment)
-        {
+        { 
+            var userMetadata = await _grpcUserClientService.GetUserByIdAsync(comment.AuthorId);
+            if (userMetadata == null)
+            {
+                throw new Exception("User not found");
+            }
             var newComment = _mapper.Map<Comment>(comment);
             newComment.PostId = postId;
             newComment.CreatedAt = DateTime.UtcNow;
             newComment.UpdatedAt = DateTime.UtcNow;
-
+            newComment.UserMetadata = new UserMetadata
+            {
+                UserId = userMetadata.UserId,
+                Username = userMetadata.Username,
+                Name = userMetadata.Name,
+                Bio = userMetadata.Bio,
+                ImageUrl = userMetadata.ImageUrl
+            };
             await _commentsCollection.InsertOneAsync(newComment);
 
             // Add the comment's ID to the Post's CommentIds list

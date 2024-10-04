@@ -10,9 +10,7 @@ namespace PostService.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("UserId")]
-        public string UserId { get; set; }
-
+        public UserMetadata UserMetadata { get; set; }
         [BsonElement("PostId")]
         [BsonRepresentation(BsonType.ObjectId)]
         public string PostId { get; set; }

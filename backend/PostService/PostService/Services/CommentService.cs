@@ -37,7 +37,7 @@ namespace PostService.Services
             commentModel.PostId = postId;
             commentModel.CreatedAt = oldComment.CreatedAt;
             commentModel.UpdatedAt = DateTime.UtcNow;
-            commentModel.AuthorId = oldComment.AuthorId;
+            commentModel.AuthorId = oldComment.userMetadata.UserId;
             commentModel.Id = oldComment.Id;
             await _commentRepository.UpdateCommentAsync(postId, commentModel);
         }

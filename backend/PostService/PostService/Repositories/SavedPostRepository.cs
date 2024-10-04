@@ -9,11 +9,13 @@ namespace PostService.Repositories
     public class SavedPostRepository : ISavedPostRepository
     {
         private readonly IMongoCollection<SavedPost> _savedPostCollection;
+        private readonly IMongoCollection<Post> _postCollection;
         private readonly IMapper _mapper;
 
         public SavedPostRepository(MongoDBContext mongoDBContext, IMapper mapper)
         {
             _savedPostCollection = mongoDBContext.SavedPosts;
+            _postCollection = mongoDBContext.Posts;
             _mapper = mapper;
         }
 
@@ -25,14 +27,14 @@ namespace PostService.Repositories
 
         public async Task SavePostAsync(string postId, string userId)
         {
-            var savePost = await _savedPostCollection.Find(savedPost => savedPost.PostId == postId && savedPost.UserId == userId).FirstOrDefaultAsync();
-            if (savePost != null)
+            var post = await _postCollection.Find(post => post.Id == postId).FirstOrDefaultAsync();
+            if (post == null)
             {
                 return;
             }
             var savedPost = new SavedPost
             {
-                PostId = postId,
+                postDto = _mapper.Map<PostDto>(post),
                 UserId = userId
             };
 
@@ -41,22 +43,22 @@ namespace PostService.Repositories
 
         public async Task UnsavePostAsync(string postId, string userId)
         {
-            var savePost = await _savedPostCollection.Find(savedPost => savedPost.PostId == postId && savedPost.UserId == userId).FirstOrDefaultAsync();
+            var savePost = await _savedPostCollection.Find(savedPost => savedPost.postDto.Id == postId && savedPost.UserId == userId).FirstOrDefaultAsync();
             if (savePost == null)
             {
                 return;
             }
-            await _savedPostCollection.DeleteOneAsync(savedPost => savedPost.PostId == postId && savedPost.UserId == userId);
+            await _savedPostCollection.DeleteOneAsync(savedPost => savedPost.postDto.Id == postId && savedPost.UserId == userId);
         }
 
         public async Task RemoveSavedPostAsync(string userId, string postId)
         {
-            var savePost = await _savedPostCollection.Find(savedPost => savedPost.UserId == userId && savedPost.PostId == postId).FirstOrDefaultAsync();
+            var savePost = await _savedPostCollection.Find(savedPost => savedPost.UserId == userId && savedPost.postDto.Id == postId).FirstOrDefaultAsync();
             if (savePost == null)
             {
                 return;
             }
-            await _savedPostCollection.DeleteOneAsync(savedPost => savedPost.UserId == userId && savedPost.PostId == postId);
+            await _savedPostCollection.DeleteOneAsync(savedPost => savedPost.UserId == userId && savedPost.postDto.Id == postId);
         }
     }
 }

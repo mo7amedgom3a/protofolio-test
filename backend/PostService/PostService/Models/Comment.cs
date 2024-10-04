@@ -14,7 +14,7 @@ namespace PostService.Models
         // Reference to the Post
         [BsonRepresentation(BsonType.ObjectId)]
         public string PostId { get; set; }
-
+        public UserMetadata UserMetadata { get; set; }
         public string AuthorId { get; set; }
         public string Content { get; set; }
         public string CodeSection { get; set; }

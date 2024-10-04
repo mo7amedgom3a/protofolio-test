@@ -11,12 +11,13 @@ namespace PostService.Repositories
         private readonly IMongoCollection<Like> _likeCollection;
         private readonly IMongoCollection<Post> _postCollection;
         private readonly IMapper _mapper;
+        private readonly GrpcUserClientService _grpcUserClientService;
 
-        public LikeRepository(MongoDBContext mongoDBContext, IMapper mapper)
+        public LikeRepository(MongoDBContext mongoDBContext, IMapper mapper, GrpcUserClientService grpcUserClientService)
         {
             _likeCollection = mongoDBContext.Likes;
             _postCollection = mongoDBContext.Posts;
-
+            _grpcUserClientService = grpcUserClientService;
             _mapper = mapper;
         }
 
@@ -28,18 +29,23 @@ namespace PostService.Repositories
 
         public async Task LikePostAsync(string postId, string userId)
         {
-            //var post = await _postCollection.Find(post => post.Id == postId).FirstOrDefaultAsync();
-            var likePost = await _likeCollection.Find(like => like.PostId == postId && like.UserId == userId).FirstOrDefaultAsync();
-            if (likePost != null)
+            var userMetadata = await _grpcUserClientService.GetUserByIdAsync(userId);
+            if (userMetadata == null)
             {
-                return;
+                throw new Exception("User not found");
             }
             var like = new Like
             {
                 PostId = postId,
-                UserId = userId
+                UserMetadata = new UserMetadata
+                {
+                    UserId = userMetadata.UserId,
+                    Username = userMetadata.Username,
+                    Name = userMetadata.Name,
+                    Bio = userMetadata.Bio,
+                    ImageUrl = userMetadata.ImageUrl
+                }
             };
-
             await _likeCollection.InsertOneAsync(like);
             // Increment the likes count of the post
             await _postCollection.UpdateOneAsync(post => post.Id == postId, Builders<Post>.Update.Inc(post => post.Likes, 1));
@@ -47,12 +53,12 @@ namespace PostService.Repositories
 
         public async Task DislikePostAsync(string postId, string userId)
         {
-            var likePost = await _likeCollection.Find(like => like.PostId == postId && like.UserId == userId).FirstOrDefaultAsync();
+            var likePost = await _likeCollection.Find(like => like.PostId == postId && like.UserMetadata.UserId == userId).FirstOrDefaultAsync();
             if (likePost == null)
             {
                 return;
             }
-            await _likeCollection.DeleteOneAsync(like => like.PostId == postId && like.UserId == userId);
+            await _likeCollection.DeleteOneAsync(like => like.PostId == postId && like.UserMetadata.UserId == userId);
             // Decrement the likes count of the post
             await _postCollection.UpdateOneAsync(post => post.Id == postId, Builders<Post>.Update.Inc(post => post.Likes, -1));
         }
