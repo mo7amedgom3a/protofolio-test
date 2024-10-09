@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostService.DTOs;
 using PostService.Interfaces;
@@ -5,6 +6,7 @@ using PostService.Services;
 
 namespace PostService.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentController : ControllerBase

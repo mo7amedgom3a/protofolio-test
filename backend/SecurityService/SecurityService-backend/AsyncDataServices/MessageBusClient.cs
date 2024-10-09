@@ -31,7 +31,6 @@ namespace SecurityService.AsyncDataServices
 
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
-       // _channel.QueueDeclare(queue: "user-registered", durable: false, exclusive: false, autoDelete: false, arguments: null);
 
         _channel.ExchangeDeclare(exchange: "trigger", type: ExchangeType.Fanout);
 

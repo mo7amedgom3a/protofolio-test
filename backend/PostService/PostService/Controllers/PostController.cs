@@ -1,9 +1,12 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostService.DTOs;
 using PostService.Interfaces;
 
 namespace PostService.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PostController : ControllerBase
@@ -44,10 +47,20 @@ namespace PostService.Controllers
             var posts = await _postService.GetPostsByUserIdAsync(userId);
             return Ok(posts);
         }
+        private bool MatchId(string id, string userId)
+        {
+            return id == userId;
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDto postDto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var userIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var valid = MatchId(userIdToken, postDto.AuthorId);
+            if (!valid) return Unauthorized("You are not authorized to create this post");
+           
             await _postService.CreatePostAsync(postDto);
             try {
                 return Created("api/post", postDto);
@@ -61,6 +74,9 @@ namespace PostService.Controllers
         {
             try
             {
+                var userIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var valid = MatchId(userIdToken, postDto.AuthorId);
+                if (!valid) return Unauthorized("You are not authorized to update this post");
                 await _postService.UpdatePostAsync(id, postDto);
                 return NoContent();
             }
@@ -73,6 +89,11 @@ namespace PostService.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(string id)
         {
+            var userIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var post = await _postService.GetPostByIdAsync(id);
+            Console.WriteLine("user id --> " + userIdToken);
+            var valid = MatchId(userIdToken, post.AuthorId);
+            if (!valid) return Unauthorized("You are not authorized to delete this post");
             await _postService.DeletePostAsync(id);
             return NoContent();
         }

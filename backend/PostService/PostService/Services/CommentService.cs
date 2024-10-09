@@ -4,7 +4,8 @@ using PostService.DTOs;
 using PostService.Interfaces;
 using PostService.Models;
 using PostService.Repositories;
-
+using PostService.AsyncDataService;
+using PostService.AsyncDataService.Models;
 namespace PostService.Services
 {
     public class CommentService : ICommentService
@@ -12,17 +13,36 @@ namespace PostService.Services
         private readonly ICommentRepository _commentRepository;
         private readonly IPostRepository _postRepository;
         private readonly IMapper _mapper;
+        private readonly IMessageBusClient _messageBusClient;
 
-        public CommentService(ICommentRepository commentRepository,IPostRepository postRepository, IMapper mapper)
+        public CommentService(
+        ICommentRepository commentRepository,
+        IPostRepository postRepository,
+        IMapper mapper,
+        IMessageBusClient messageBusClient)
         {
             _commentRepository = commentRepository;
             _mapper = mapper;
             _postRepository = postRepository;
+            _messageBusClient = messageBusClient;
         }
 
-        public Task AddCommentToPostAsync(string postId, CreateCommentDto comment)
+        public async Task AddCommentToPostAsync(string postId, CreateCommentDto comment)
         {
-            return _commentRepository.AddCommentAsync(postId, comment);
+            await _commentRepository.AddCommentAsync(postId, comment);
+            var comments = _commentRepository.GetCommentsByPostIdAsync(postId);
+            var post = await _postRepository.GetPostByIdAsync(postId);
+            var lastComment = comments.Result.Last();
+            var commentCreatedMessage = new PostCommentedEvent
+            {
+                PostId = postId,
+                CommentId = lastComment.Id,
+                CommentContent = lastComment.Content,
+                SenderUserId = lastComment.userMetadata.UserId,
+                RecipientUserId = post.AuthorId,
+                CommentedAt = lastComment.CreatedAt
+            };
+            _messageBusClient.PublishEvent(commentCreatedMessage, "PostCommentedEvent");
         }
 
         public Task<IEnumerable<CommentDto>> GetCommentsByPostIdAsync(string postId)

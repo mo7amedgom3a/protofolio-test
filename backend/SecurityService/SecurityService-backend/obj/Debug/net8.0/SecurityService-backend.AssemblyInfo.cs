@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SecurityService-backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+91b8cd81ace8e2fda750d60f1b8277ab872a01d5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1b6b1ca7db9c40061abd4e8c8f34398ca79e5d37")]
 [assembly: System.Reflection.AssemblyProductAttribute("SecurityService-backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SecurityService-backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

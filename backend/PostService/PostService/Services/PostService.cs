@@ -2,7 +2,8 @@ using AutoMapper;
 using PostService.DTOs;
 using PostService.Interfaces;
 using PostService.Models;
-
+using PostService.AsyncDataService;
+using PostService.AsyncDataService.Models;
 namespace PostService.Services
 {
     public class Postservice : IPostService
@@ -10,12 +11,14 @@ namespace PostService.Services
         private readonly IPostRepository _postRepository;
         private readonly ICommentRepository _commentRepository;
         private readonly IMapper _mapper;
+        private readonly IMessageBusClient _messageBusClient;
 
-        public Postservice(IPostRepository postRepository, IMapper mapper, ICommentRepository commentRepository)
+        public Postservice(IPostRepository postRepository, IMapper mapper, ICommentRepository commentRepository, IMessageBusClient messageBusClient)
         {
             _postRepository = postRepository;
             _mapper = mapper;
             _commentRepository = commentRepository;
+            _messageBusClient = messageBusClient;
         }
 
         public async Task<IEnumerable<PostDto>> GetAllPostsAsync()
@@ -45,6 +48,14 @@ namespace PostService.Services
             var post = _mapper.Map<Post>(postDto);
             
             await _postRepository.CreatePostAsync(post);
+            var postCreatedMessage = new PostCreatedEvent
+            {
+                PostId = post.Id,
+                UserId = post.AuthorId,
+                CreatedAt = post.CreatedAt,
+                PostContent = post.Content
+            };
+            _messageBusClient.PublishEvent(postCreatedMessage, "PostCreatedEvent");
         }
 
         public async Task UpdatePostAsync(string id, UpdatePostDto postDto)

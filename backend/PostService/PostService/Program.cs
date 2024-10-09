@@ -10,6 +10,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using PostService.Grpc;
 using Grpc.Core;
 using Grpc.Net.Client;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using PostService.AsyncDataService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,7 +62,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<ISavedPostRepository, SavedPostRepository>();
     services.AddScoped<ISavedPostService, SavedPostService>();
     services.AddSingleton<GrpcUserClientService>();
-
+    builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
     // Add AutoMapper
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -114,6 +118,25 @@ services.AddMvc(options =>
 
     // Add controllers
     services.AddControllers();
+    string publicKey = File.ReadAllText("public.key");
+RSA rsa = RSA.Create();
+rsa.ImportFromPem(publicKey.ToCharArray());
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            IssuerSigningKey = new RsaSecurityKey(rsa),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
     // Add CORS
     services.AddCors(options =>
@@ -125,6 +148,7 @@ services.AddMvc(options =>
                    .AllowAnyHeader();
         });
     });
+
 
 }
 
