@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "S2eqlfSD1XYwB6fhYBlH86BNJpSW3m5f8iwN2AkCADTpQwE9jNHpnANAynNoCjweJBGpBdgL7qrnL4cFfqMndQ==",
+  "dgSpecHash": "bufmjE1yShm6fCLTWRPZ9lT8WkMKITDwXypL3ZbuyVGcM/DzHtDtYk5f3LfUxsUl1dtxZ91Zn1P8MvxLg/Xrsg==",
   "success": true,
   "projectFilePath": "/home/mohamed/repos/protofolio-test/backend/UserService/UserManagementService/UserManagementService.csproj",
   "expectedPackageFiles": [

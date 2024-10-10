@@ -1,5 +1,4 @@
 using NotificationService.Hubs;
-using AutoMapper;
 using NotificationService.MappingProfiles;
 using Microsoft.OpenApi.Models;
 using NotificationService.Interfaces;
@@ -8,6 +7,9 @@ using NotificationService.Data;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.EventProcessing;
 using NotificationService.AsyncDataService;
+using NotificationService.GrpcClients;
+using Grpc.Net.Client;
+using NotificationService.Grpc;
 
 
 
@@ -20,7 +22,17 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseMySql(connection, serverVersion);
 }
 );
+// Configure gRPC client
 
+var handler = new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+};
+var channel = GrpcChannel.ForAddress("http://localhost:5173", new GrpcChannelOptions { HttpHandler = handler });
+var client = new UserService.UserServiceClient(channel);
+
+builder.Services.AddSingleton(client);
+builder.Services.AddScoped<GrpcUserClientService>();
 // Add services to the container.
 builder.Services.AddAutoMapper(typeof(NotificationMappingProfile).Assembly);
 builder.Services.AddControllers();
@@ -28,6 +40,9 @@ builder.Services.AddScoped<INotificationService, NotificationService.Services.No
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddHostedService<MessageBusSubscriber>();
+
+
+
 
 // Add SignalR service to the container
 builder.Services.AddSignalR();
@@ -60,5 +75,6 @@ app.UseSwaggerUI(c =>
 // Map SignalR hubs and controllers
 app.MapHub<NotificationHub>("/hubs/notification");
 app.MapControllers();
+
 
 app.Run();

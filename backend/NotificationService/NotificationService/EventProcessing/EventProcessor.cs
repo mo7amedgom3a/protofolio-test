@@ -5,6 +5,11 @@ using NotificationService.Models;
 using NotificationService.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NotificationService.GrpcClients;
+using System.Text;
+using NotificationService.Grpc;
+using NotificationService.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace NotificationService.EventProcessing
 {
@@ -12,11 +17,13 @@ namespace NotificationService.EventProcessing
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<EventProcessor> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public EventProcessor(IServiceProvider serviceProvider, ILogger<EventProcessor> logger)
+        public EventProcessor(IServiceProvider serviceProvider, ILogger<EventProcessor> logger, IHubContext<NotificationHub> hubContext)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
         public async Task ProcessEventAsync(string message)
@@ -68,15 +75,20 @@ namespace NotificationService.EventProcessing
         {
             using var scope = _serviceProvider.CreateScope();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+            var userGrpcClient = scope.ServiceProvider.GetRequiredService<GrpcUserClientService>();
 
             var eventData = JsonConvert.DeserializeObject<dynamic>(message).Data;
             var postLikedEvent = JsonConvert.DeserializeObject<PostLikedEvent>(eventData.ToString());
 
+            // Fetch user details using gRPC
+            var senderDetails = await userGrpcClient.GetUserByIdAsync(postLikedEvent.SenderUserId);
+            Console.WriteLine($"Fetching user details using gRPC. Sender details: {senderDetails}");
+            // Create a new notification with the fetched user details
             var notification = new Notification
             {
                 RecipientUserId = postLikedEvent.RecipientUserId,
                 SenderUserId = postLikedEvent.SenderUserId,
-                Message = "Your post was liked!",
+                Message = $"{senderDetails.DisplayName} liked your post!",
                 Type = "Like",
                 Timestamp = postLikedEvent.LikedAt,
                 IsRead = false
@@ -85,6 +97,8 @@ namespace NotificationService.EventProcessing
             try
             {
                 await notificationService.CreateNotificationAsync(notification);
+                await _hubContext.Clients.User(postLikedEvent.RecipientUserId)
+                .SendAsync("ReceiveNotification", notification);
                 _logger.LogInformation("Notification for PostLikedEvent saved successfully.");
             }
             catch (Exception ex)
@@ -97,36 +111,37 @@ namespace NotificationService.EventProcessing
         {
             using var scope = _serviceProvider.CreateScope();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
-
+            var userGrpcClient = scope.ServiceProvider.GetRequiredService<GrpcUserClientService>();
+            
             var eventData = JsonConvert.DeserializeObject<dynamic>(message).Data;
             var postCommentedEvent = JsonConvert.DeserializeObject<PostCommentedEvent>(eventData.ToString());
 
+            // Fetch user details using gRPC
+            UserResponse senderDetails = await userGrpcClient.GetUserByIdAsync(postCommentedEvent.SenderUserId);
+            string name = senderDetails.Username;
             var notification = new Notification
             {
                 RecipientUserId = postCommentedEvent.RecipientUserId,
                 SenderUserId = postCommentedEvent.SenderUserId,
-                Message = "Someone commented on your post!",
+                Message = $"{name} commented on your post",
                 Type = "Comment",
                 Timestamp = postCommentedEvent.CommentedAt,
                 IsRead = false
             };
 
-            try
-            {
-                await notificationService.CreateNotificationAsync(notification);
-                _logger.LogInformation("Notification for PostCommentedEvent saved successfully.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving notification for PostCommentedEvent.");
-            }
-        }
-    }
 
-    public enum EventType
-    {
-        PostLiked,
-        PostCommented,
-        Undetermined
+                await notificationService.CreateNotificationAsync(notification);
+                await _hubContext.Clients.User(postCommentedEvent.RecipientUserId)
+                .SendAsync("ReceiveNotification", notification);
+                _logger.LogInformation("Notification for PostCommentedEvent saved successfully.");
+
+        }
+
+        public enum EventType
+        {
+            PostLiked,
+            PostCommented,
+            Undetermined
+        }
     }
 }

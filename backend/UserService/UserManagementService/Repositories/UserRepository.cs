@@ -17,7 +17,11 @@ namespace UserManagementService.Repositories
         public async Task<PaginatedUsers> GetUsers(int page, int pageSize)
         {
             var totalUsers = await _users.CountDocumentsAsync(user => true);
-            var users = await _users.Find(user => true).Skip((page - 1) * pageSize).Limit(pageSize).ToListAsync();
+            var users = await _users.Find(user => true)
+                                    .SortByDescending(user => user.Followers.Count)
+                                    .Skip((page - 1) * pageSize)
+                                    .Limit(pageSize)
+                                    .ToListAsync();
             var usersDto = _mapper.Map<IEnumerable<User>, IEnumerable<UserProfileDto>>(users);
             
             return new PaginatedUsers

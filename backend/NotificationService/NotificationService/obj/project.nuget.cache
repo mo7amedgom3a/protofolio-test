@@ -1,11 +1,17 @@
 {
   "version": 2,
-  "dgSpecHash": "pGv/Onoj4Bq2xNGZYbgHp/X+PkrSnbCXNJRnEvAi2DYBJ6aYQK1wiYC5otOKqwW+RWX3+Rlv0sr2hk99oVWzbg==",
+  "dgSpecHash": "lT6o5wZVzA1lwrbJkBbgtkmUKqjqt9ZwgBuQXeiJVQRc3sadKReHbXcdD+Zd1x+xsY2GpJlhNToBWlPydpNk4Q==",
   "success": true,
   "projectFilePath": "/home/mohamed/repos/protofolio-test/backend/NotificationService/NotificationService/NotificationService.csproj",
   "expectedPackageFiles": [
     "/home/mohamed/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/home/mohamed/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
+    "/home/mohamed/.nuget/packages/google.protobuf/3.28.2/google.protobuf.3.28.2.nupkg.sha512",
+    "/home/mohamed/.nuget/packages/grpc.core/2.46.6/grpc.core.2.46.6.nupkg.sha512",
+    "/home/mohamed/.nuget/packages/grpc.core.api/2.66.0/grpc.core.api.2.66.0.nupkg.sha512",
+    "/home/mohamed/.nuget/packages/grpc.net.client/2.66.0/grpc.net.client.2.66.0.nupkg.sha512",
+    "/home/mohamed/.nuget/packages/grpc.net.common/2.66.0/grpc.net.common.2.66.0.nupkg.sha512",
+    "/home/mohamed/.nuget/packages/grpc.tools/2.67.0/grpc.tools.2.67.0.nupkg.sha512",
     "/home/mohamed/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/home/mohamed/.nuget/packages/microsoft.aspnetcore.authentication.abstractions/2.2.0/microsoft.aspnetcore.authentication.abstractions.2.2.0.nupkg.sha512",
     "/home/mohamed/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/8.0.10/microsoft.aspnetcore.authentication.jwtbearer.8.0.10.nupkg.sha512",
