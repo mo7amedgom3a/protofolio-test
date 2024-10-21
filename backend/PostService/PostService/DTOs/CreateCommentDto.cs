@@ -6,6 +6,7 @@ namespace PostService.DTOs
     {
         public string AuthorId { get; set; }
         public string Content { get; set; }
+        public string Language { get; set; }
         public string Code { get; set; }
     }
 }

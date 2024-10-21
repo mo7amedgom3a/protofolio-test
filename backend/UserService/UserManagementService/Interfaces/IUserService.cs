@@ -14,7 +14,8 @@ namespace UserManagementService.Interfaces
         Task<bool> UnfollowUserAsync(string userId, string targetId);
         Task<PaginatedUsers> GetFollowersAsync(string userId, int page, int pageSize);
         Task<PaginatedUsers> GetFollowingAsync(string userId, int page, int pageSize);
-
+        // search users by quary
+        Task <IEnumerable<UserProfileDto>> SearchUsersAsync(string query);
        
     }
 }

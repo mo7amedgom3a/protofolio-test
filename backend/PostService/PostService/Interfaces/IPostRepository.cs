@@ -16,5 +16,6 @@ namespace PostService.Interfaces
         Task<IEnumerable<PostDto>> GetPostsByUserIdAsync(string userId);
         Task<PaginatedPostsDto> GetPaginatedPostsAsync(int page, int pageSize);
         Task<PaginatedPostsDto> GetPaginatedPostsByIdAsync(string userId, int page, int pageSize);
+        Task UpdateUserInformationInPostsAsync(UserUpdatedEvent userUpdatedEvent);
     }
 }

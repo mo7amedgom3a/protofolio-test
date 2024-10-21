@@ -21,7 +21,10 @@ namespace PostService.Repositories
 
         public async Task<IEnumerable<SavedPost>> GetSavedPostsByUserIdAsync(string userId)
         {
-            var savedPosts = await _savedPostCollection.Find(savedPost => savedPost.UserId == userId).ToListAsync();
+            var savedPosts = await _savedPostCollection
+                .Find(savedPost => savedPost.UserId == userId)
+                .SortByDescending(savedPost => savedPost.SavedAt)
+                .ToListAsync();
             return savedPosts;
         }
 
@@ -59,6 +62,26 @@ namespace PostService.Repositories
                 return;
             }
             await _savedPostCollection.DeleteOneAsync(savedPost => savedPost.UserId == userId && savedPost.postDto.Id == postId);
+        }
+
+        public async Task UpdateUserInformationInSavedPostsAsync(UserUpdatedEvent userUpdatedEvent)
+        {
+            var filter = Builders<SavedPost>.Filter.Eq(savedPost => savedPost.UserId, userUpdatedEvent.UserId);
+            var update = Builders<SavedPost>.Update
+            .Set(savedPost => savedPost.postDto.userMetadata.Name, userUpdatedEvent.Name)
+            .Set(savedPost => savedPost.postDto.userMetadata.Bio, userUpdatedEvent.Bio)
+            .Set(savedPost => savedPost.postDto.userMetadata.ImageUrl, userUpdatedEvent.ImageUrl);
+
+            var updateResult = await _savedPostCollection.UpdateManyAsync(filter, update);
+
+            if (updateResult.IsAcknowledged)
+            {
+            return;
+            }
+            else
+            {
+            throw new Exception("Failed to update user information in saved posts.");
+            }
         }
     }
 }

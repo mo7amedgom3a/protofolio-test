@@ -12,7 +12,7 @@ using System.Security.Cryptography;
 using System.IO;
 using UserManagementService.EventProcessing;
 using ZstdSharp.Unsafe;
-
+using UserManagementService.AsyncDataServices;
 var builder = WebApplication.CreateBuilder(args);
 
 // MongoDB connection setup
@@ -31,12 +31,12 @@ builder.Services.AddGrpc(options =>
     options.MaxReceiveMessageSize = 16 * 1024 * 1024; // 16 MB
 });
 
-
 // Repositories and services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddHostedService<MessageBusSubscriber>();
+builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -87,6 +87,15 @@ builder.Services.AddSwaggerGen(c =>
 // Add controllers support
 builder.Services.AddControllers();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder.WithOrigins("http://localhost:3000")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod());
+});
+
 string publicKey = File.ReadAllText("public.key");
 RSA rsa = RSA.Create();
 rsa.ImportFromPem(publicKey.ToCharArray());
@@ -118,6 +127,9 @@ app.UseSwaggerUI(c =>
     c.DocumentTitle = "User Management Service API Docs";
     c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 });
+
+app.UseCors("AllowSpecificOrigin");
+
 app.MapGrpcService<GrpcUserService>();
 app.UseAuthentication();
 app.UseAuthorization();

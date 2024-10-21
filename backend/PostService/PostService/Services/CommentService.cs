@@ -30,17 +30,18 @@ namespace PostService.Services
         public async Task AddCommentToPostAsync(string postId, CreateCommentDto comment)
         {
             await _commentRepository.AddCommentAsync(postId, comment);
-            var comments = _commentRepository.GetCommentsByPostIdAsync(postId);
             var post = await _postRepository.GetPostByIdAsync(postId);
-            var lastComment = comments.Result.Last();
+            var lastComment = post.CommentIds[post.CommentIds.Count - 1];
+            var commentData = await _commentRepository.GetCommentByIdAsync(lastComment);    
+            Console.WriteLine("Last comment: " + commentData.userMetadata.UserId);
             var commentCreatedMessage = new PostCommentedEvent
             {
                 PostId = postId,
-                CommentId = lastComment.Id,
-                CommentContent = lastComment.Content,
-                SenderUserId = lastComment.userMetadata.UserId,
+                CommentId = commentData.Id,
+                CommentContent = commentData.Content,
+                SenderUserId = commentData.userMetadata.UserId,
                 RecipientUserId = post.AuthorId,
-                CommentedAt = lastComment.CreatedAt
+                CommentedAt = commentData.CreatedAt
             };
             _messageBusClient.PublishEvent(commentCreatedMessage, "PostCommentedEvent");
         }
@@ -64,6 +65,11 @@ namespace PostService.Services
         public Task DeleteCommentAsync(string postId, string commentId)
         {
             return _commentRepository.DeleteCommentAsync(postId, commentId);
+        }
+
+        public Task UpdateUserInformationInCommentsAsync(UserUpdatedEvent userUpdatedEvent)
+        {
+            return _commentRepository.UpdateUserInformationInCommentsAsync(userUpdatedEvent);
         }
     }
 }

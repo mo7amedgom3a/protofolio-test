@@ -1,3 +1,5 @@
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace PostService.DTOs
 {
     public class CreatePostDto
@@ -6,6 +8,7 @@ namespace PostService.DTOs
         public string Title { get; set; }
         public string Content { get; set; }
         public string Code { get; set; }
+        public string Language { get; set; }
         public List<string> Images { get; set; } = new List<string>();
     }
 }

@@ -27,39 +27,40 @@ namespace UserManagementService.Controllers
         {
             var paginatedUsers = await _userService.GetAllUsersAsync(page, pageSize);
 
+            // Sort users by FollowersCount
+            var sortedUsers = paginatedUsers.Items.OrderByDescending(user => user.FollowersCount);
+
             // HATEOAS Links
             var response = new
             {
-                
-                Data = paginatedUsers.Items.Select(user => new
+            Data = sortedUsers.Select(user => new
+            {
+                user.UserId,
+                user.Username,
+                user.Bio,
+                user.FollowersCount,
+                user.FollowingCount,
+                user.ImageUrl,
+                user.Name,
+                _links = new
                 {
-                    user.UserId,
-                    user.Username,
-                    user.Bio,
-                    user.FollowersCount,
-                    user.FollowingCount,
-                    user.ImageUrl,
-                    user.Name,
-                    _links = new
-                    {
-                        self = Url.Action(nameof(GetUserById), new { id = user.UserId }),
-                        follow = Url.Action(nameof(FollowUser), new { userId = user.UserId, targetId = user.UserId }),
-                        unfollow = Url.Action(nameof(UnfollowUser), new { userId = user.UserId, targetId = user.UserId })
-                    }
-                }),
-                Pagination = new
-                {
-                    paginatedUsers.TotalItems,
-                    paginatedUsers.CurrentPage,
-                    paginatedUsers.PageSize,
-
-                    paginatedUsers.TotalPages,
-                    _links = new
-                    {
-                        next = page < paginatedUsers.TotalPages ? Url.Action(nameof(GetAllUsers), new { page = page + 1, pageSize }) : null,
-                        previous = page > 1 ? Url.Action(nameof(GetAllUsers), new { page = page - 1, pageSize }) : null
-                    }
+                self = Url.Action(nameof(GetUserById), new { id = user.UserId }),
+                follow = Url.Action(nameof(FollowUser), new { userId = user.UserId, targetId = user.UserId }),
+                unfollow = Url.Action(nameof(UnfollowUser), new { userId = user.UserId, targetId = user.UserId })
                 }
+            }),
+            Pagination = new
+            {
+                paginatedUsers.TotalItems,
+                paginatedUsers.CurrentPage,
+                paginatedUsers.PageSize,
+                paginatedUsers.TotalPages,
+                _links = new
+                {
+                next = page < paginatedUsers.TotalPages ? Url.Action(nameof(GetAllUsers), new { page = page + 1, pageSize }) : null,
+                previous = page > 1 ? Url.Action(nameof(GetAllUsers), new { page = page - 1, pageSize }) : null
+                }
+            }
             };
 
             return Ok(response);
@@ -234,6 +235,14 @@ namespace UserManagementService.Controllers
             };
 
             return Ok(response);
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string query)
+        {
+            var users = await _userService.SearchUsersAsync(query);
+
+            return Ok(users);
         }
     }
 }

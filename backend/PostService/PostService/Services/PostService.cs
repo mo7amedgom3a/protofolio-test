@@ -79,5 +79,9 @@ namespace PostService.Services
             return _mapper.Map<IEnumerable<PostDto>>(posts);
         }
 
+        public Task UpdateUserInformationInPostsAsync(UserUpdatedEvent userUpdatedEvent)
+        {
+            return _postRepository.UpdateUserInformationInPostsAsync(userUpdatedEvent);
+        }
     }
 }

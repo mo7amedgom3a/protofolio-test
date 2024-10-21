@@ -57,10 +57,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     });
 
     // Configure Identity
-
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
 
     // AutoMapper configuration
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -80,15 +79,14 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
-            
         });
-
 
     // Register Repositories and Services for Dependency Injection
     services.AddScoped<IUserRepository, UserRepository>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
     services.AddSingleton<IMessageBusClient, MessageBusClient>();
+
     // Add Authorization
     services.AddAuthorization();
 
@@ -121,6 +119,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             new string[] { }
         }});
     });
+
+    // Add CORS services
+    services.AddCors(options =>
+    {
+        options.AddPolicy("AllowSpecificOrigin",
+            builder => builder.WithOrigins("http://localhost:3000")
+                              .AllowAnyHeader()
+                              .AllowAnyMethod());
+    });
 }
 
 void ConfigureMiddleware(WebApplication app)
@@ -135,8 +142,9 @@ void ConfigureMiddleware(WebApplication app)
         app.UseHsts();
     }
     app.UseRouting();
-    app.UseAuthentication();
-    app.UseAuthorization();
+
+    // Enable CORS
+    app.UseCors("AllowSpecificOrigin");
 
     // Enable middleware to serve generated Swagger as a JSON endpoint.
     app.UseSwagger();

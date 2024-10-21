@@ -13,6 +13,8 @@ namespace PostService.DTOs
         [BsonIgnoreIfDefault]
         public UserMetadata userMetadata { get; set; }
         public string Code { get; set; }
+        [BsonIgnoreIfNull]
+        public string Language { get; set; }
         public List<string> Images { get; set; } = new List<string>();
         public List<string> Comments { get; set; } = new List<string>();
         public int Likes { get; set; }

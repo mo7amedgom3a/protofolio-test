@@ -29,7 +29,9 @@ namespace PostService.Repositories
             {
                return null;
             }
-            var comments = await _commentsCollection.Find(c => c.PostId == postId).ToListAsync();
+            var comments = await _commentsCollection.Find(c => c.PostId == postId)
+                                                    .SortByDescending(c => c.CreatedAt)
+                                                    .ToListAsync();
             return _mapper.Map<IEnumerable<CommentDto>>(comments);
         }
 
@@ -80,6 +82,17 @@ public async Task<CommentDto> GetCommentByIdAsync(string commentId)
             var postFilter = Builders<Post>.Filter.Eq(p => p.Id, postId);
             var update = Builders<Post>.Update.Pull(p => p.CommentIds, commentId);
             await _postsCollection.UpdateOneAsync(postFilter, update);
+        }
+
+        public async Task UpdateUserInformationInCommentsAsync(UserUpdatedEvent userUpdatedEvent)
+        {
+            var filter = Builders<Comment>.Filter.Eq(c => c.UserMetadata.UserId, userUpdatedEvent.UserId);
+            var update = Builders<Comment>.Update
+            .Set(c => c.UserMetadata.Name, userUpdatedEvent.Name)
+            .Set(c => c.UserMetadata.Bio, userUpdatedEvent.Bio)
+            .Set(c => c.UserMetadata.ImageUrl, userUpdatedEvent.ImageUrl);
+
+            await _commentsCollection.UpdateManyAsync(filter, update);
         }
     }
 }

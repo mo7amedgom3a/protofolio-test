@@ -16,6 +16,8 @@ namespace PostService.Models
         [BsonIgnoreIfNull]
         public string Code { get; set; }
         [BsonIgnoreIfNull]
+        public string Language { get; set; }
+        [BsonIgnoreIfNull]
         public List<string> Images { get; set; } = new List<string>();
         public List<string> CommentIds { get; set; } = new List<string>();
         public int Likes { get; set; }

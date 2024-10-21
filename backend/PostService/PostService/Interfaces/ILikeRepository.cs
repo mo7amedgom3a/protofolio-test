@@ -9,5 +9,6 @@ namespace PostService.Interfaces
         Task<IEnumerable<Like>> GetLikesByPostIdAsync(string postId);
         Task LikePostAsync(string postId, string userId);
         Task DislikePostAsync(string postId, string userId);
+        
     }
 }

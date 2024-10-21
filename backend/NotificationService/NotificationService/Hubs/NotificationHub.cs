@@ -37,5 +37,10 @@ namespace NotificationService.Hubs
             var notification = await _notificationService.GetNotificationAsync(notificationIdGuid);
             await Clients.Caller.SendAsync("NotificationReceived", notification);
         }
+        public async Task GetUserNotificationsAsync(string userId)
+        {
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId);
+            await Clients.Caller.SendAsync("NotificationsReceived", notifications);
+        }
     }
 }

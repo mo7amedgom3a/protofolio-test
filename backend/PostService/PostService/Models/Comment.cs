@@ -18,6 +18,8 @@ namespace PostService.Models
         public string AuthorId { get; set; }
         public string Content { get; set; }
         public string CodeSection { get; set; }
+        [BsonIgnoreIfNull]
+        public string Language { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

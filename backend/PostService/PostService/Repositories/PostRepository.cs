@@ -72,7 +72,7 @@ namespace PostService.Repositories
                 Bio = userMetadata.Bio,
                 ImageUrl = userMetadata.ImageUrl
             };
-            post.Code = EscapeStrings(post.Code);
+            // post.Code = EscapeStrings(post.Code);
             await _posts.InsertOneAsync(post);
         }
 
@@ -93,6 +93,17 @@ namespace PostService.Repositories
         {
             var posts = await _posts.Find(post => post.userMetadata.UserId == userId).ToListAsync();
             return _mapper.Map<IEnumerable<PostDto>>(posts);
+        }
+
+        public async Task UpdateUserInformationInPostsAsync(UserUpdatedEvent userUpdatedEvent)
+        {
+            var filter = Builders<Post>.Filter.Eq(post => post.userMetadata.UserId, userUpdatedEvent.UserId);
+            var update = Builders<Post>.Update
+            .Set(post => post.userMetadata.Name, userUpdatedEvent.Name)
+            .Set(post => post.userMetadata.Bio, userUpdatedEvent.Bio)
+            .Set(post => post.userMetadata.ImageUrl, userUpdatedEvent.ImageUrl);
+
+            await _posts.UpdateManyAsync(filter, update);
         }
     }
 }

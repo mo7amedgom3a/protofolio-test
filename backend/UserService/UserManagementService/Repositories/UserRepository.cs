@@ -18,7 +18,7 @@ namespace UserManagementService.Repositories
         {
             var totalUsers = await _users.CountDocumentsAsync(user => true);
             var users = await _users.Find(user => true)
-                                    .SortByDescending(user => user.Followers.Count)
+                                   
                                     .Skip((page - 1) * pageSize)
                                     .Limit(pageSize)
                                     .ToListAsync();
@@ -79,8 +79,8 @@ namespace UserManagementService.Repositories
             {
                 return true;
             }
-            user.Following.Add(targetId); // Add target to user's following list
-            targetUser.Followers.Add(userId); // Add user to target's followers list
+            user.Following.Add(targetId);
+            targetUser.Followers.Add(userId);
             var result = await _users.ReplaceOneAsync(u => u.UserId == userId, user);
             var targetResult = await _users.ReplaceOneAsync(u => u.UserId == targetId, targetUser);
             return result.IsAcknowledged && result.ModifiedCount > 0 && targetResult.IsAcknowledged && targetResult.ModifiedCount > 0;
@@ -140,5 +140,13 @@ namespace UserManagementService.Repositories
             };
         }
 
+        public async Task<IEnumerable<UserProfileDto>> SearchUsers(string query)
+        {
+            var filter = Builders<User>.Filter.Text(query);
+            var users = await _users.Find(filter)
+                        .ToListAsync();
+            var usersDto = _mapper.Map<IEnumerable<User>, IEnumerable<UserProfileDto>>(users);
+            return usersDto.OrderByDescending(u => u.FollowersCount);
+        }
     }
 }

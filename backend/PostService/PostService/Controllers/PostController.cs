@@ -28,8 +28,21 @@ namespace PostService.Controllers
             var paginatedPosts = await _postService.GetPaginatedPostsAsync(page, pageSize);
             return Ok(paginatedPosts);
         }
-        [HttpGet("{authorId}")]
-        public async Task<IActionResult> GetPostById(string authorId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPostById(string id)
+        {
+            try
+            {
+                var post = await _postService.GetPostByIdAsync(id);
+                return Ok(post);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+        [HttpGet("user/posts/{authorId}")]
+        public async Task<IActionResult> GetPostsByUserId(string authorId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -40,12 +53,6 @@ namespace PostService.Controllers
             {
                 return NotFound(ex.Message);
             }
-        }
-        [HttpGet("user/posts/{userId}")]
-        public async Task<IActionResult> GetPostsByUserId(string userId)
-        {
-            var posts = await _postService.GetPostsByUserIdAsync(userId);
-            return Ok(posts);
         }
         private bool MatchId(string id, string userId)
         {
@@ -62,8 +69,9 @@ namespace PostService.Controllers
             if (!valid) return Unauthorized("You are not authorized to create this post");
            
             await _postService.CreatePostAsync(postDto);
+            var post = await _postService.GetPostsByUserIdAsync(postDto.AuthorId);
             try {
-                return Created("api/post", postDto);
+                return Created("api/post", post.Last());
             } catch (Exception ex) {
                 return BadRequest(ex.Message);
             }
@@ -118,6 +126,10 @@ namespace PostService.Controllers
         [HttpGet("saved/{userId}")]
         public async Task<IActionResult> GetSavedPostsByUserId(string userId)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var userIdToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!MatchId(userIdToken, userId)) return Unauthorized("You are not authorized to view this user's saved posts");
             var savedPosts = await _savedPostService.GetSavedPostsByUserIdAsync(userId);
             return Ok(savedPosts);
         }

@@ -21,8 +21,9 @@ namespace NotificationService.Repositories
         public async Task<IEnumerable<Notification>> GetNotificationsByUserIdAsync(string userId)
         {
             return await _context.Notifications
-                .Where(n => n.RecipientUserId == userId)
-                .ToListAsync();
+            .Where(n => n.RecipientUserId == userId)
+            .OrderByDescending(n => n.Timestamp)
+            .ToListAsync();
         }
 
         public async Task<Notification> GetNotificationByIdAsync(Guid notificationId)
@@ -52,5 +53,6 @@ namespace NotificationService.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
     }
 }

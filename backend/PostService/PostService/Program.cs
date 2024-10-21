@@ -15,16 +15,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PostService.AsyncDataService;
 
+using PostService.EventProcessing;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog for logging
 
-
 // Configure services
 ConfigureServices(builder.Services, builder.Configuration);
-
-
 
 var app = builder.Build();
 
@@ -63,6 +61,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<ISavedPostService, SavedPostService>();
     services.AddSingleton<GrpcUserClientService>();
     builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
+    builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+    builder.Services.AddHostedService<MessageBusSubscriber>();
     // Add AutoMapper
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -111,45 +111,43 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
             }
         });
     });
-services.AddMvc(options =>
-{
-   options.SuppressAsyncSuffixInActionNames = false;
-});
+    services.AddMvc(options =>
+    {
+        options.SuppressAsyncSuffixInActionNames = false;
+    });
 
     // Add controllers
     services.AddControllers();
     string publicKey = File.ReadAllText("public.key");
-RSA rsa = RSA.Create();
-rsa.ImportFromPem(publicKey.ToCharArray());
+    RSA rsa = RSA.Create();
+    rsa.ImportFromPem(publicKey.ToCharArray());
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            IssuerSigningKey = new RsaSecurityKey(rsa),
-            ClockSkew = TimeSpan.Zero
-        };
-    });
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                IssuerSigningKey = new RsaSecurityKey(rsa),
+                ClockSkew = TimeSpan.Zero
+            };
+        });
 
     // Add CORS
     services.AddCors(options =>
     {
         options.AddPolicy("AllowAll", builder =>
         {
-            builder.AllowAnyOrigin()
+            builder.WithOrigins("http://localhost:3000")
                    .AllowAnyMethod()
                    .AllowAnyHeader();
         });
     });
-
-
 }
 
 void ConfigureMiddleware(WebApplication app)

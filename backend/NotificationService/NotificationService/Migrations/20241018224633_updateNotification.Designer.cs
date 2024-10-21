@@ -12,8 +12,8 @@ using NotificationService.Data;
 namespace NotificationService.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20241008191228_AddSenderAndRecipientToNotification")]
-    partial class AddSenderAndRecipientToNotification
+    [Migration("20241018224633_updateNotification")]
+    partial class updateNotification
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,10 @@ namespace NotificationService.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("tinyint(1)");

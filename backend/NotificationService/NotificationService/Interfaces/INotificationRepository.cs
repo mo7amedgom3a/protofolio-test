@@ -11,5 +11,6 @@ namespace NotificationService.Interfaces
         Task AddNotificationAsync(Notification notification);
         Task UpdateNotificationAsync(Notification notification);
         Task DeleteNotificationAsync(Guid notificationId);
+    
     }
 }

@@ -28,6 +28,10 @@ namespace NotificationService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("tinyint(1)");
 

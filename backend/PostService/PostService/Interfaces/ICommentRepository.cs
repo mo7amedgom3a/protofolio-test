@@ -10,5 +10,7 @@ namespace PostService.Interfaces
         Task AddCommentAsync(string postId, CreateCommentDto comment);
         Task UpdateCommentAsync(string postId, Comment comment);
         Task DeleteCommentAsync(string postId, string commentId);
+        Task UpdateUserInformationInCommentsAsync(UserUpdatedEvent userUpdatedEvent);
+        
     }
 }

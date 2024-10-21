@@ -22,9 +22,15 @@ namespace SecurityService.Helpers
 
             _privateKey = RSA.Create();
             _publicKey = RSA.Create();
-            var privateKey = File.ReadAllText("/home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/private.key");
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var privateKeyPath = Path.Combine(currentDirectory, "private.key");
+            var privateKey = File.ReadAllText(privateKeyPath);
+            
             _privateKey.ImportFromPem(privateKey.ToCharArray());
-            var publicKey = File.ReadAllText("/home/mohamed/repos/protofolio-test/backend/SecurityService/SecurityService-backend/public.key");
+            var publicKeyPath = Path.Combine(currentDirectory, "public.key");
+
+            var publicKey = File.ReadAllText(publicKeyPath);
+            
             _publicKey.ImportFromPem(publicKey.ToCharArray());
         }
 

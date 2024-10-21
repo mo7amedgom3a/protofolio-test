@@ -3,18 +3,19 @@ using UserManagementService.Interfaces;
 using UserManagementService.Models;
 using UserManagementService.Repositories;
 using UserManagementService.DTOs;
+using UserManagementService.AsyncDataServices;
 
 namespace UserManagementService.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-
-        public UserService(IUserRepository userRepository)
+        private readonly IMessageBusClient _publisher;
+        public UserService(IUserRepository userRepository, IMessageBusClient publisher)
         {
             _userRepository = userRepository;
+            _publisher = publisher;
         }
-
         public async Task<PaginatedUsers> GetAllUsersAsync(int page, int pageSize)
         {
             return await _userRepository.GetUsers(page, pageSize);
@@ -32,7 +33,19 @@ namespace UserManagementService.Services
 
         public async Task<bool> UpdateUserAsync(string id, UserProfileUpdateDto updatedUser)
         {
-            return await _userRepository.UpdateUser(id, updatedUser);
+            var response =  await _userRepository.UpdateUser(id, updatedUser);
+            if(response)
+            {
+                var userUpdatedEvent = new UserUpdatedEvent
+                {
+                    UserId = id,
+                    Name = updatedUser.Name,
+                    Bio = updatedUser.Bio,
+                    ImageUrl = updatedUser.ImageUrl
+                };
+                _publisher.PublishUserUpdatedEvent(userUpdatedEvent);
+            }
+            return response;
         }
 
         public async Task<bool> DeleteUserAsync(string id)
@@ -57,5 +70,9 @@ namespace UserManagementService.Services
             return await _userRepository.GetFollowing(userId, page, pageSize);
         }
 
+        public Task<IEnumerable<UserProfileDto>> SearchUsersAsync(string query)
+        {
+            return _userRepository.SearchUsers(query);
+        }
     }
 }

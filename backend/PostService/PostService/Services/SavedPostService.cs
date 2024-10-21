@@ -35,5 +35,10 @@ namespace PostService.Services
         {
             await _savedPostRepository.RemoveSavedPostAsync(userId, postId);
         }
+
+        public Task UpdateUserInformationInSavedPostsAsync(UserUpdatedEvent userUpdatedEvent)
+        {
+            return _savedPostRepository.UpdateUserInformationInSavedPostsAsync(userUpdatedEvent);
+        }
     }
 }

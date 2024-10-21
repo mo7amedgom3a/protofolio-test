@@ -12,4 +12,5 @@ WORKDIR /app
 COPY --from=build-env /app/out .
 
 # Set the entry point to run the application
+
 ENTRYPOINT ["dotnet", "SecurityService-backend.dll"]

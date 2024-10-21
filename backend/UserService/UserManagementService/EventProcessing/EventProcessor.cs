@@ -80,6 +80,5 @@ namespace UserManagementService.EventProcessing
         UserCreated,
         UserDeleted,
         Undetermined
-        
     }
 }

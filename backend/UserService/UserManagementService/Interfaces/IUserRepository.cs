@@ -14,6 +14,8 @@ namespace UserManagementService.Interfaces
 
         Task<PaginatedUsers> GetFollowers(string userId, int page, int pageSize);
         Task<PaginatedUsers> GetFollowing(string userId, int page, int pageSize);
+
+        Task<IEnumerable<UserProfileDto>> SearchUsers(string query);
        
     }
 }

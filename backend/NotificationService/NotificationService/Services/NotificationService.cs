@@ -44,5 +44,6 @@ namespace NotificationService.Services
         {
             await _notificationRepository.DeleteNotificationAsync(notificationId);
         }
+
     }
 }

@@ -1,3 +1,4 @@
+using PostService.DTOs;
 using PostService.Models;
 
 namespace PostService.Interfaces
@@ -8,5 +9,6 @@ namespace PostService.Interfaces
         Task SavePostAsync(string postId, string userId);
         Task UnsavePostAsync(string postId, string userId);
         Task RemoveSavedPostAsync(string userId, string postId);
+        Task UpdateUserInformationInSavedPostsAsync(UserUpdatedEvent userUpdatedEvent);
     }
 }

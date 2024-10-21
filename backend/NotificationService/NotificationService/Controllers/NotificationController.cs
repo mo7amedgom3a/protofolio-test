@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using NotificationService.Hubs;
 using NotificationService.DTOs;
-
+using NotificationService.Services; // Assuming you have a service layer
+using NotificationService.Interfaces;
 namespace NotificationService.Controllers
 {
     [ApiController]
@@ -10,21 +11,23 @@ namespace NotificationService.Controllers
     public class NotificationController : ControllerBase
     {
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService; // Assuming you have a service interface
 
-        public NotificationController(IHubContext<NotificationHub> hubContext)
+        public NotificationController(IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
-        [HttpPost("send")]
-        public async Task<IActionResult> SendNotification([FromBody] MessageDto messageDto)
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetNotificationsByUserIdAsync(string userId)
         {
-            if (ModelState.IsValid)
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId);
+            if (notifications == null)
             {
-                await _hubContext.Clients.User(messageDto.UserId).SendAsync("ReceiveNotification", messageDto.Message);
-                return Ok(new { Status = "Notification sent successfully" });
+                return NotFound();
             }
-            return BadRequest("Invalid input.");
+            return Ok(notifications);
         }
     }
 }

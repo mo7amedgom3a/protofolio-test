@@ -75,3 +75,4 @@
 /home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
 /home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
 /home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/RabbitMQ.Client.dll
+/home/mohamed/repos/protofolio-test/backend/PostService/PostService/bin/Debug/net8.0/Newtonsoft.Json.dll

@@ -81,30 +81,21 @@ namespace NotificationService.EventProcessing
             var postLikedEvent = JsonConvert.DeserializeObject<PostLikedEvent>(eventData.ToString());
 
             // Fetch user details using gRPC
-            var senderDetails = await userGrpcClient.GetUserByIdAsync(postLikedEvent.SenderUserId);
-            Console.WriteLine($"Fetching user details using gRPC. Sender details: {senderDetails}");
-            // Create a new notification with the fetched user details
+            UserResponse senderDetails = await userGrpcClient.GetUserByIdAsync(postLikedEvent.SenderUserId);
+            string name = senderDetails.Username;
             var notification = new Notification
             {
-                RecipientUserId = postLikedEvent.RecipientUserId,
-                SenderUserId = postLikedEvent.SenderUserId,
-                Message = $"{senderDetails.DisplayName} liked your post!",
-                Type = "Like",
-                Timestamp = postLikedEvent.LikedAt,
-                IsRead = false
+            RecipientUserId = postLikedEvent.RecipientUserId,
+            SenderUserId = postLikedEvent.SenderUserId,
+            ImageUrl = senderDetails.ImageUrl,
+            Message = $"{name} liked your post {postLikedEvent.PostId}",
+            Type = "Like",
+            Timestamp = postLikedEvent.LikedAt,
+            IsRead = false
             };
 
-            try
-            {
-                await notificationService.CreateNotificationAsync(notification);
-                await _hubContext.Clients.User(postLikedEvent.RecipientUserId)
-                .SendAsync("ReceiveNotification", notification);
-                _logger.LogInformation("Notification for PostLikedEvent saved successfully.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving notification for PostLikedEvent.");
-            }
+            await notificationService.CreateNotificationAsync(notification);
+            _logger.LogInformation("Notification for PostLikedEvent saved successfully.");
         }
 
         private async Task HandlePostCommentedEventAsync(string message)
@@ -123,7 +114,8 @@ namespace NotificationService.EventProcessing
             {
                 RecipientUserId = postCommentedEvent.RecipientUserId,
                 SenderUserId = postCommentedEvent.SenderUserId,
-                Message = $"{name} commented on your post",
+                ImageUrl = senderDetails.ImageUrl,
+                Message = $"{name} commented on your post {postCommentedEvent.PostId}",
                 Type = "Comment",
                 Timestamp = postCommentedEvent.CommentedAt,
                 IsRead = false
@@ -131,8 +123,6 @@ namespace NotificationService.EventProcessing
 
 
                 await notificationService.CreateNotificationAsync(notification);
-                await _hubContext.Clients.User(postCommentedEvent.RecipientUserId)
-                .SendAsync("ReceiveNotification", notification);
                 _logger.LogInformation("Notification for PostCommentedEvent saved successfully.");
 
         }
